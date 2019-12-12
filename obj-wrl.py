@@ -77,7 +77,7 @@ class Parser:
         self.state = next_state
 
     def start(self):
-        self.arquivoWRL.write("#VRML V2.0 utf8\n")
+        self.arquivosidjuhpsdiufhWRL.write("#VRML V2.0 utf8\n")
         self.arquivoWRL.write("DEF __1 Transform {\n")
         self.arquivoWRL.write("  children [\n")
         self.arquivoWRL.write("    DEF __2 Group {\n")
