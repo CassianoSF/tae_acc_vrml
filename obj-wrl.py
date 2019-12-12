@@ -73,8 +73,8 @@ class Parser:
             self.arquivoWRL.write("                  ]\n")
             self.arquivoWRL.write("                }\n")
             self.arquivoWRL.write("                normal Normal {\n")
-            self.arquivoWRL.write("                  vector [\n")
-        self.state = next_state
+            self.arquivoWRL.write("                  vector [\n")asdnasjd
+        self.state = next_stateasdnbfçiosdafbnasdfldsanbfpasdjfhbp
 
     def start(self):
         self.arquivoWRL.write("#VRML V2.0 utf8\n")
