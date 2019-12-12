@@ -63,24 +63,7 @@ class Parser:
     def checkStateChange(self, next_state):
         if (self.state == 'face' and next_state != 'face'):
             self.processFaces()
-        elif (self.state != 'vertex' and next_state == 'vertex'):
-            self.def_count+=1
-            self.arquivoWRL.write("              geometry DEF __"+ str(self.def_count) +" IndexedFaceSet {\n")
-            self.arquivoWRL.write("                solid FALSE\n")
-            self.arquivoWRL.write("                coord Coordinate {\n")
-            self.arquivoWRL.write("                  point [\n")
-        elif (self.state != 'normal' and next_state == 'normal'):
-            self.arquivoWRL.write("                  ]\n")
-            self.arquivoWRL.write("                }\n")
-            self.arquivoWRL.write("                normal Normal {\n")
-            self.arquivoWRL.write("                  vector [\n")
-        self.state = next_state
-
-    def start(self):
-        self.arquivoWRL.write("#VRML V2.0 utf8\n")
-        self.arquivoWRL.write("DEF __1 Transform {\n")
-        self.arquivoWRL.write("  children [\n")
-        self.arquivoWRL.write("    DEF __2 Group {\n")
+        elif (self.state != 'vertex' and next_st
         self.arquivoWRL.write("      children [\n")
 
         aux_vert_count = 0
