@@ -1,6 +1,7 @@
 ############################################
 # Autor: Cassiano Surdi Franco
 # Data: 12/12/2019
+############################################
 #
 # Conversor Waverformat(.obj) to VRLM (.wrl)
 # A conversão segue o padrao VRML 2.0 e se aproveita o recurso IndexedFaceSet
@@ -11,6 +12,7 @@
 # E o importador em https://github.com/CassianoSF/pyong-hau-ki/blob/master/Loader.py
 # Muito similar, porem lá eu fazia mapeamento de textura
 # No VRLM 2.0 não encontrei a documentação completa para implementar texturas com IndexedFaceSet
+#
 ############################################
 
 import sys
