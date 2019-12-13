@@ -3,22 +3,21 @@
 # Data: 12/12/2019
 ############################################
 #
-# Conversor Waverformat(.obj) to VRLM (.wrl)
-# A conversão segue o padrao VRML 2.0 e se aproveita o recurso IndexedFaceSet
-# segundo a documentação encontrada em http://www.c3.hu/cryptogram/vrmltut/part5.html#5.3indexedfacefaceset
-# Essa maneira otimiza a utlização dos vértices, sem a necessidade de repeti-los no código.
-# Eu já havia criado um importador Waveformat para OpenGL 3+ em um trabalho de Computação gráfica com o professor Jacson
-# Esse trabalho pode ser encontrado em https://github.com/CassianoSF/pyong-hau-ki
-# E o importador em https://github.com/CassianoSF/pyong-hau-ki/blob/master/Loader.py
-# Muito similar, porem lá eu fazia mapeamento de textura
-# No VRLM 2.0 não encontrei a documentação completa para implementar texturas com IndexedFaceSet
+# Conversor Waverformat(.obj) to VRLM 2.0(.wrl)
 #
+# Utilizando IndexedFaceSet a utilização do buffer fica otimizada pois nenhuma coordenada é repetida. 
+# Após a declaração dos vértices, coordenadas de textura e normais os indices se encarregam do mapeamento.
+#
+# referências: 
+# http://www.c3.hu/cryptogram/vrmltut/part5.html
+# http://rvirtual.free.fr/programmation/VRML/tuto_eng/tut13.html
 ############################################
 
 import sys
 
-class Parser:
-    def __init__(self, arquivoWRL, arquivoOBJ):
+class Conversor:
+    # Contrutor passando arquivos no respectivo modo R/W
+    def __init__(self, arquivoOBJ, arquivoWRL):
         self.arquivoWRL = arquivoWRL
         self.arquivoOBJ = arquivoOBJ
         self.faceBuff = []
@@ -26,29 +25,41 @@ class Parser:
         self.def_count = 2
         self.vert_count = 0
         self.norm_count = 0
+        self.text_count = 0
 
+    # Processa os indices lidos do OBJ
     def processFaces(self):
         coordIndex = []
+        textureIndex = []
         normalIndex = []
         for line in self.faceBuff:
             coordIndexFace = []
             normalIndexFace = []
+            textureIndexFace = []
             for face in line.split(' '):
                 coordIndexFace.append(str(int(face.split('/')[0]) - 1 - self.vert_count))
+                textureIndexFace.append(str(int(face.split('/')[1]) - 1 - self.norm_count))
                 normalIndexFace.append(str(int(face.split('/')[2]) - 1 - self.norm_count))
             coordIndex.append(coordIndexFace)
+            textureIndex.append(textureIndexFace)
             normalIndex.append(normalIndexFace)
+        self.writeIndexes(coordIndex,textureIndex,normalIndex)
 
+    # Escreve os indices processados no WRL
+    def writeIndexes(self,coordIndex,textureIndex,normalIndex):
         self.arquivoWRL.write("                  ]\n")
         self.arquivoWRL.write("                }\n")
         self.arquivoWRL.write("                coordIndex [\n")
-
         for face in coordIndex:
             self.arquivoWRL.write("                    " + ' '.join(face) + " -1\n")
 
         self.arquivoWRL.write("                ]\n")
-        self.arquivoWRL.write("                normalIndex [\n")
+        self.arquivoWRL.write("                texCoordIndex [\n")
+        for face in textureIndex:
+            self.arquivoWRL.write("                    " + ' '.join(face) + " -1\n")
 
+        self.arquivoWRL.write("                ]\n")
+        self.arquivoWRL.write("                normalIndex [\n")
         for face in normalIndex:
             self.arquivoWRL.write("                    " + ' '.join(face) + " -1\n")
 
@@ -57,9 +68,9 @@ class Parser:
         self.arquivoWRL.write("            }\n")
         self.arquivoWRL.write("          ]\n")
         self.arquivoWRL.write("        }\n")
-
         self.faceBuff = []
 
+    # Maquina de estados que toma conta das transições v/vt/vn/f
     def checkStateChange(self, next_state):
         if (self.state == 'face' and next_state != 'face'):
             self.processFaces()
@@ -69,6 +80,11 @@ class Parser:
             self.arquivoWRL.write("                solid FALSE\n")
             self.arquivoWRL.write("                coord Coordinate {\n")
             self.arquivoWRL.write("                  point [\n")
+        elif (self.state != 'texture' and next_state == 'texture'):
+            self.arquivoWRL.write("                  ]\n")
+            self.arquivoWRL.write("                }\n")
+            self.arquivoWRL.write("                texCoord TextureCoordinate {\n")
+            self.arquivoWRL.write("                  point [\n")
         elif (self.state != 'normal' and next_state == 'normal'):
             self.arquivoWRL.write("                  ]\n")
             self.arquivoWRL.write("                }\n")
@@ -76,6 +92,8 @@ class Parser:
             self.arquivoWRL.write("                  vector [\n")
         self.state = next_state
 
+
+    # inicia a converção
     def start(self):
         self.arquivoWRL.write("#VRML V2.0 utf8\n")
         self.arquivoWRL.write("DEF __1 Transform {\n")
@@ -84,6 +102,7 @@ class Parser:
         self.arquivoWRL.write("      children [\n")
 
         aux_vert_count = 0
+        aux_text_count = 0
         aux_norm_count = 0
 
         for line in self.arquivoOBJ:
@@ -107,6 +126,10 @@ class Parser:
                 aux_vert_count +=1
                 self.checkStateChange('vertex')
                 self.arquivoWRL.write("                    " + line[2:-1] + "\n")
+            if line[0:2] == 'vt':
+                aux_text_count +=1
+                self.checkStateChange('texture')
+                self.arquivoWRL.write("                    " + line[2:-1] + "\n")
             if line[0:2] == "vn":
                 aux_norm_count +=1
                 self.checkStateChange('normal')
@@ -115,13 +138,11 @@ class Parser:
                 self.checkStateChange('face')
                 self.faceBuff.append(line[2:-1])
 
-
         self.processFaces()
         self.arquivoWRL.write("      ]\n")
         self.arquivoWRL.write("    }\n")
         self.arquivoWRL.write("  ]\n")
         self.arquivoWRL.write("}\n")
-
 
         self.arquivoOBJ.close()
         self.arquivoWRL.close()
@@ -130,7 +151,7 @@ class Parser:
 
 
 if len(sys.argv) >= 3:
-    print("Numero de argumentos passado corretamente")
+    print("Start...")
 else:
     print("Falta argumentos ($python obj-wrl.py file.obj file.wrl)")
     sys.exit(1)
@@ -151,4 +172,5 @@ except Exception:
     print("Arquivo WRL não pode ser aberto")
     sys.exit(1)
 
-Parser(arquivoWRL, arquivoOBJ).start()
+Conversor(arquivoOBJ, arquivoWRL).start()
+print("Done!")
