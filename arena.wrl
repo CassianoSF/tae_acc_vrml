@@ -10,17 +10,6 @@ DEF Grass Appearance {
   }
 }
 
-DEF Crowd Appearance {
-  material Material {
-    ambientIntensity 1
-    shininess 0.324
-    specularColor 0.5 0.5 0.5
-  }
-  texture ImageTexture {
-    url ["textures/crowd.jpg"] 
-  }
-}
-
 DEF __1 Transform {
   children [
     DEF __2 Group {

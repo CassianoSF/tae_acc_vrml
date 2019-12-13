@@ -11,6 +11,8 @@
 # referências: 
 # http://www.c3.hu/cryptogram/vrmltut/part5.html
 # http://rvirtual.free.fr/programmation/VRML/tuto_eng/tut13.html
+#
+# Não deu tempo de mapear as texturas =/
 ############################################
 
 import sys
